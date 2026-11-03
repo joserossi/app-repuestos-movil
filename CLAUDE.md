@@ -85,8 +85,32 @@ sincronizarlo a mano acá.
 
 ## Estado y pendientes
 
-- Hecho: app, exportación, instalación local probada con `npm run dev`.
-- Pendiente: git init + deploy a GitHub Pages (el usuario tiene `gh` configurado; irá por
-  GitHub Actions o `gh-pages`), probar instalación real en el iPhone, ícono definitivo
-  (el actual es provisorio), posible actualización automática de datos.
+- Hecho: **v1 publicada** en https://joserossi.github.io/app-repuestos-movil/
+  (repo público https://github.com/joserossi/app-repuestos-movil, rama `main` = código,
+  rama `gh-pages` = build). UI: barra fija con logo + título a la derecha, buscador en
+  mayúsculas, filtros Todo/Código/Casillero + pastilla Actualizar, lista tipo filas con
+  el casillero a la derecha.
+- Pendiente: probar instalación real en el iPhone, ícono definitivo (el actual es
+  provisorio), posible actualización automática de datos.
+
+## Deploy
+
+```powershell
+.\deploy.ps1      # build + publica dist/ en la rama gh-pages (tarda ~1 min en reflejarse)
+```
+Después de cambiar código: commitear/pushear `main` y correr `deploy.ps1`. Si cambia la
+estrategia del service worker, subir `CACHE` en `public/sw.js` para forzar actualización.
+
+Particularidades de esta PC (por eso `deploy.ps1` y los push usan opciones especiales):
+- HTTPS interceptado: git con OpenSSL falla con "unable to get local issuer certificate".
+  Se usa `-c http.sslBackend=schannel` (certificados de Windows). **No** desactivar la
+  verificación SSL. winget igual: usar `--source winget`.
+- La credencial guardada de Visual Studio está vencida: se usa el token de `gh`
+  (`-c credential.helper=!'C:/Program Files/GitHub CLI/gh.exe' auth git-credential`).
+- `gh` está en `C:\Program Files\GitHub CLI\gh.exe` (puede no estar en el PATH). Su token
+  no tiene scope `workflow`, así que no se pueden subir GitHub Actions; por eso se publica
+  con la rama `gh-pages`.
+- En PowerShell 5.1 git escribe avisos por stderr que parecen errores: mirar `$LASTEXITCODE`.
+  Push de `main`:
+  `git -c http.sslBackend=schannel -c credential.helper= -c "credential.helper=!'C:/Program Files/GitHub CLI/gh.exe' auth git-credential" push`
 - Fuera de alcance por ahora: edición de stock, precios, otras secciones de la app general.
