@@ -1,0 +1,92 @@
+# CLAUDE.md
+
+Guía para Claude Code al trabajar en este repositorio.
+
+## Qué es
+
+PWA de **consulta** de repuestos y casilleros para iPhone 13. Deriva de `app-agricola`
+(carpeta hermana: `C:\Users\joser\Desktop\app-agricola`), pero es un proyecto independiente:
+no importa nada de ella y tendrá su propio repo de git.
+
+- **Solo lectura.** No edita stock ni sincroniza hacia atrás.
+- **Datos locales.** Viven en IndexedDB del celular. El hosting (GitHub Pages, pendiente)
+  sirve únicamente el código; **nunca** se publican datos de repuestos.
+- **Sin App Store.** Se instala desde Safari con "Agregar a pantalla de inicio".
+
+## Comandos
+
+Plataforma: **Windows 10**. Node.js 24 en `C:\Program Files\nodejs` (puede no estar en el PATH).
+
+```powershell
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+npm install
+npm run dev       # http://localhost:5173 y por LAN (vite --host)
+npm run build     # → dist/
+npm run preview   # sirve dist/ (aquí sí corre el service worker)
+```
+
+Iconos (stdlib pura, sin PIL):
+```powershell
+..\app-agricola\backend\.venv\Scripts\python.exe generar_iconos.py
+```
+
+## Flujo de datos
+
+1. En `app-agricola`: `backend\.venv\Scripts\python.exe backend\scripts\exportar_repuestos.py`
+   → `app-agricola\data\export\repuestos.json` (lee `data\repuestos.db` en modo solo lectura).
+2. Se copia a Drive (`G:\Mi unidad\repuestos.json`) y se importa desde el iPhone con el botón
+   **Importar / Actualizar** (selector de archivos de iOS).
+3. La app valida que exista `items` (array) y guarda todo el JSON en IndexedDB.
+
+### Formato de `repuestos.json`
+
+```json
+{ "generado": "YYYY-MM-DD HH:MM:SS",
+  "items": [{ "c": codigo, "d": descripcion, "k": casillero, "s": stock_actual, "m": stock_minimo, "p": proveedor }] }
+```
+
+Claves cortas a propósito (tamaño). **No incluye precios** ni debe incluirlos sin decidirlo
+explícitamente: el JSON viaja por Drive/mail. Si cambia el formato, actualizar a la vez
+`exportar_repuestos.py` (en `app-agricola`) y `src/App.jsx`.
+
+## Arquitectura
+
+```
+index.html              → meta tags iOS (standalone, safe-area, apple-touch-icon)
+public/manifest.webmanifest, sw.js, icon-*.png, apple-touch-icon.png
+src/main.jsx            → fuentes (@fontsource/figtree), registra sw.js solo en PROD
+src/db.js               → IndexedDB: una clave 'inventario' con el JSON completo
+src/App.jsx             → única pantalla: importar, buscador, filtros, lista
+src/index.css           → estilos (paleta y tipografía copiadas de app-agricola)
+```
+
+- `vite.config.js` usa `base: './'` para funcionar en subruta de GitHub Pages
+  (`usuario.github.io/<repo>/`). Mantener rutas **relativas** (`./sw.js`, `./manifest...`).
+- `public/sw.js`: stale-while-revalidate del mismo origen, solo cachea el shell. Al cambiar
+  la estrategia o querer forzar actualización, subir la constante `CACHE`.
+- Búsqueda: tokens AND, sin mayúsculas ni acentos, sobre un índice precalculado con `useMemo`.
+  Modos: Todo (código+descripción+casillero) / Código / Casillero. Render de a 60 (`PAGE`).
+- El input de búsqueda usa `font-size: 16px` a propósito: menos de eso hace zoom automático en iOS.
+
+## Estilo
+
+Misma identidad que `app-agricola`: variables `--jd-green #367C2B`, `--jd-yellow #FFDE00`,
+`--bg #EEECE6`, barra superior `#5E7853`, franja verde/amarilla fija arriba, fuente Figtree
+(autoalojada vía `@fontsource` para que funcione offline). Si cambia el estilo allá, hay que
+sincronizarlo a mano acá.
+
+## Particularidades de iOS
+
+- El service worker exige **HTTPS** (o localhost). `http://192.168.x.x` sirve para ver el
+  diseño, no para instalar ni para el modo offline.
+- Safari puede borrar IndexedDB tras ~7 días sin uso **si la app no está instalada** en la
+  pantalla de inicio. Instalada no ocurre. Por eso el JSON queda también en Drive como respaldo.
+- `pedirPersistencia()` (`navigator.storage.persist`) se llama tras importar; es best-effort.
+
+## Estado y pendientes
+
+- Hecho: app, exportación, instalación local probada con `npm run dev`.
+- Pendiente: git init + deploy a GitHub Pages (el usuario tiene `gh` configurado; irá por
+  GitHub Actions o `gh-pages`), probar instalación real en el iPhone, ícono definitivo
+  (el actual es provisorio), posible actualización automática de datos.
+- Fuera de alcance por ahora: edición de stock, precios, otras secciones de la app general.
