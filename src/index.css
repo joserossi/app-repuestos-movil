@@ -34,7 +34,10 @@ body::before {
   content: '';
   position: fixed; top: 0; left: 0; right: 0;
   height: calc(var(--stripe-h) + var(--safe-top));
-  background: linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-green) 55%, #1e4d15 100%);
+  /* la franja de 7px queda abajo; la zona segura (notch/hora) se rellena con el color de la barra */
+  background:
+    linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-green) 55%, #1e4d15 100%) bottom / 100% var(--stripe-h) no-repeat,
+    var(--topbar-bg);
   z-index: 200;
 }
 
