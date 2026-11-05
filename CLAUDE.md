@@ -79,6 +79,13 @@ sincronizarlo a mano acá.
 
 - El service worker exige **HTTPS** (o localhost). `http://192.168.x.x` sirve para ver el
   diseño, no para instalar ni para el modo offline.
+- Barra de estado: `apple-mobile-web-app-status-bar-style` es **`black`** (opaca; la app arranca
+  debajo de la hora). Con `black-translucent` la PWA instalada difuminaba/lavaba la franja de
+  degradé bajo la barra de estado (en Safari normal se veía bien); se probó una topbar sticky
+  única sin éxito y se resolvió con `black`. El estilo se lee al instalar: tras cambiarlo hay que
+  borrar la PWA de la pantalla de inicio y volver a agregarla.
+- La topbar (`.topbar` en `index.css`) es un solo elemento sticky que incluye la franja
+  verde/amarilla; no usar capas `position: fixed` aparte para eso.
 - Safari puede borrar IndexedDB tras ~7 días sin uso **si la app no está instalada** en la
   pantalla de inicio. Instalada no ocurre. Por eso el JSON queda también en Drive como respaldo.
 - `pedirPersistencia()` (`navigator.storage.persist`) se llama tras importar; es best-effort.
@@ -90,8 +97,10 @@ sincronizarlo a mano acá.
   rama `gh-pages` = build). UI: barra fija con logo + título a la derecha, buscador en
   mayúsculas, filtros Todo/Código/Casillero + pastilla Actualizar, lista tipo filas con
   el casillero a la derecha.
-- Pendiente: probar instalación real en el iPhone, ícono definitivo (el actual es
-  provisorio), posible actualización automática de datos.
+- Hecho: instalación en el iPhone probada (encabezado OK con barra de estado `black`).
+  Ícono actual: cubo de "Repuestos" de app-agricola en crema `#EDE9DF` sobre verde de la barra
+  `#5E7853` (generado por `generar_iconos.py`).
+- Pendiente: posible actualización automática de datos.
 
 ## Deploy
 
@@ -99,7 +108,8 @@ sincronizarlo a mano acá.
 .\deploy.ps1      # build + publica dist/ en la rama gh-pages (tarda ~1 min en reflejarse)
 ```
 Después de cambiar código: commitear/pushear `main` y correr `deploy.ps1`. Si cambia la
-estrategia del service worker, subir `CACHE` en `public/sw.js` para forzar actualización.
+estrategia del service worker, subir `CACHE` en `public/sw.js` para forzar actualización
+(hoy `repuestos-shell-v4`).
 
 Particularidades de esta PC (por eso `deploy.ps1` y los push usan opciones especiales):
 - HTTPS interceptado: git con OpenSSL falla con "unable to get local issuer certificate".
