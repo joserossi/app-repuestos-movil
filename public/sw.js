@@ -1,6 +1,6 @@
 // Service worker minimo: guarda la app para que abra sin conexion.
 // Los datos de repuestos NO pasan por aca: viven en IndexedDB (ver src/db.js).
-const CACHE = 'repuestos-shell-v2'
+const CACHE = 'repuestos-shell-v3'
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

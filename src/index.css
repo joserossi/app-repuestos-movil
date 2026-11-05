@@ -29,27 +29,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* franja verde/amarilla de la app general */
-body::before {
-  content: '';
-  position: fixed; top: 0; left: 0; right: 0;
-  height: calc(var(--stripe-h) + var(--safe-top));
-  /* la franja de 7px queda abajo; la zona segura (notch/hora) se rellena con el color de la barra */
-  background:
-    linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-green) 55%, #1e4d15 100%) bottom / 100% var(--stripe-h) no-repeat,
-    var(--topbar-bg);
-  z-index: 200;
-}
-
-.app { padding-top: calc(var(--stripe-h) + var(--safe-top)); }
-
-/* ── Topbar (compacta, fija) ── */
+/* ── Topbar (fija) ──
+   Un solo elemento sticky que incluye la zona segura de iOS (hora/batería) y la franja
+   verde/amarilla de la app general; sin capas position:fixed aparte. */
+html { background: var(--topbar-bg); }
+.app { background: var(--bg); min-height: 100dvh; }
 .topbar {
-  position: sticky; top: calc(var(--stripe-h) + var(--safe-top)); z-index: 100;
-  height: var(--topbar-h);
-  background: var(--topbar-bg);
+  position: sticky; top: 0; z-index: 100;
+  height: calc(var(--safe-top) + var(--stripe-h) + var(--topbar-h));
+  background:
+    linear-gradient(90deg, var(--jd-yellow) 0%, var(--jd-green) 55%, #1e4d15 100%) 0 var(--safe-top) / 100% var(--stripe-h) no-repeat,
+    var(--topbar-bg);
   display: flex; align-items: center; gap: 14px;
-  padding: 0 14px;
+  padding: calc(var(--safe-top) + var(--stripe-h)) 14px 0;
   border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 /* mismo bloque de marca que el sidebar de la app general */
